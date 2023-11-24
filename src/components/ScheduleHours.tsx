@@ -1,16 +1,14 @@
+import { useAtomValue } from "jotai";
+import { hoursAtom } from "@/store/schedule.ts";
+
 export const ScheduleHours = () => {
+  const hoursList = useAtomValue(hoursAtom);
+
   return (
-    <aside className="flex flex-col gap-[25px]">
-      <p className="text-gray-500 ">19:00</p>
-      <p className="text-gray-500 ">19:00</p>
-      <p className="text-gray-500 ">19:00</p>
-      <p className="text-gray-500 ">19:00</p>
-      <p className="text-gray-500 ">19:00</p>
-      <p className="text-gray-500 ">19:00</p>
-      <p className="text-gray-500 ">19:00</p>
-      <p className="text-gray-500 ">19:00</p>
-      <p className="text-gray-500 ">19:00</p>
-      <p className="text-gray-500 ">19:00</p>
+    <aside className="flex flex-col gap-[35px]">
+      {hoursList.map((hour) => (
+        <p className="text-gray-500 ">{hour}</p>
+      ))}
     </aside>
   );
 };
