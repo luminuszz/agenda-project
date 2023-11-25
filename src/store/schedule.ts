@@ -5,11 +5,12 @@ import {
   eachHourOfInterval,
   endOfDay,
   format,
-  setMinutes,
   setHours,
+  setMinutes,
 } from "date-fns";
 
 import { ptBR } from "date-fns/locale";
+import { tasksAtom } from "@/store/task.ts";
 
 export const todayAtom = atom(new Date());
 
@@ -41,7 +42,25 @@ export const hoursAtom = atom((get) => {
   return hoursList.map((date) => ({
     hour: date.getHours(),
     formattedHour: format(date, "HH:mm"),
+    date,
   }));
+});
+
+export const hourLinesWithTasksAtom = atom((get) => {
+  const tasks = get(tasksAtom);
+
+  return get(hoursAtom).map((hoursData) => {
+    const currentTasksInThisInterval = tasks.filter(
+      (task) =>
+        task.timeRange.startDate.getHours() === hoursData.hour &&
+        task.date.getDay() === get(selectedDateAtom).getDay(),
+    );
+
+    return {
+      ...hoursData,
+      tasks: currentTasksInThisInterval,
+    };
+  });
 });
 
 export const selectedDateAtom = atom(new Date());

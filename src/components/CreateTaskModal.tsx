@@ -1,4 +1,5 @@
 import {
+  DialogClose,
   DialogContent,
   DialogDescription,
   DialogFooter,
@@ -7,8 +8,7 @@ import {
 } from "@/components/ui/dialog.tsx";
 import { Button } from "@/components/ui/button.tsx";
 import { Textarea } from "@/components/ui/textarea.tsx";
-import { useAtomValue } from "jotai";
-import { selectedDateAtom } from "@/store/schedule.ts";
+import { useAtom, useAtomValue } from "jotai";
 import {
   Form,
   FormControl,
@@ -21,30 +21,73 @@ import { useForm } from "react-hook-form";
 import { Input } from "@/components/ui/input.tsx";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { format } from "date-fns";
+import { format, isAfter } from "date-fns";
+import { taskStore } from "@/store/task.ts";
+import { useRef } from "react";
+import { useToast } from "@/components/ui/use-toast.ts";
+import { Label } from "@/components/ui/label.tsx";
+import { transformHourStringToDate } from "@/lib/utils.ts";
+import { selectedDateAtom } from "@/store/schedule.ts";
 
-const formSchema = z.object({
-  description: z.string().min(1),
-  selectedDate: z.date(),
-  startTimeRange: z.number().min(1).max(60),
-});
+const formSchema = z
+  .object({
+    description: z.string().min(1),
+    selectedDate: z.date(),
+    startTimeRange: z.string(),
+    endTimeRange: z.string(),
+  })
+  .superRefine((data, ctx) => {
+    const initialDateIsAfterToEndRangeDate = isAfter(
+      transformHourStringToDate(data.startTimeRange),
+      transformHourStringToDate(data.endTimeRange),
+    );
+
+    if (initialDateIsAfterToEndRangeDate) {
+      ctx.addIssue({
+        code: "invalid_date",
+        path: ["endTimeRange"],
+        message: "Informe uma data maior que a inicial",
+      });
+    }
+  });
 
 type FormValues = z.infer<typeof formSchema>;
 
 export const CreateTaskModal = () => {
+  const { toast } = useToast();
+
+  const [, addTask] = useAtom(taskStore);
   const selectedDate = useAtomValue(selectedDateAtom);
+
+  const closeButtonRef = useRef<HTMLButtonElement>(null);
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     values: {
       description: "",
       selectedDate,
-      startTimeRange: 0,
+      startTimeRange: format(new Date(), "HH:mm"),
+      endTimeRange: "",
     },
   });
 
-  const handleCreateTask = (payload: FormValues) => {
-    console.log(payload);
+  const handleCreateTask = (payload: typeof formSchema._output) => {
+    addTask({
+      date: payload.selectedDate,
+      description: payload.description,
+      timeRange: {
+        endDate: transformHourStringToDate(payload.endTimeRange),
+        startDate: transformHourStringToDate(payload.startTimeRange),
+      },
+      id: Date.now().toLocaleString(),
+    });
+
+    closeButtonRef.current?.click();
+
+    toast({
+      description: "Tarefa adicionada !",
+      variant: "success",
+    });
   };
 
   return (
@@ -91,26 +134,39 @@ export const CreateTaskModal = () => {
             name="selectedDate"
           />
 
-          <FormField
-            control={form.control}
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Duração</FormLabel>
-                <FormControl>
-                  <Input
-                    {...field}
-                    type="number"
-                    onChange={(e) => field.onChange(Number(e.target.value))}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-            name="startTimeRange"
-          />
+          <Label>Duração</Label>
+
+          <div className=" grid grid-cols-2 gap-4">
+            <FormField
+              control={form.control}
+              render={({ field }) => (
+                <FormItem>
+                  <FormControl>
+                    <Input {...field} type="time" />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+              name="startTimeRange"
+            />
+
+            <FormField
+              control={form.control}
+              render={({ field }) => (
+                <FormItem>
+                  <FormControl>
+                    <Input {...field} type="time" />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+              name="endTimeRange"
+            />
+          </div>
 
           <DialogFooter>
             <Button type="submit">Criar</Button>
+            <DialogClose ref={closeButtonRef}></DialogClose>
           </DialogFooter>
         </form>
       </Form>
