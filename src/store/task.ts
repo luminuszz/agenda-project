@@ -1,4 +1,5 @@
-import { atom } from "jotai";
+import { atom, useAtom } from "jotai";
+import { getAllTasksCall } from "@/lib/api.ts";
 
 export type Task = {
   id: string;
@@ -18,3 +19,29 @@ export const taskStore = atom(
     set(tasksAtom, [...get(tasksAtom), newTask]);
   },
 );
+
+export const isTasksLoadingAtom = atom(false);
+
+export const useTasks = () => {
+  const [tasks, setTasks] = useAtom(tasksAtom);
+  const [istasksLoading, setIstasksLoading] = useAtom(isTasksLoadingAtom);
+
+  const makeRequest = async () => {
+    setIstasksLoading(true);
+    try {
+      const data = await getAllTasksCall();
+
+      setTasks(data);
+    } catch (e) {
+      console.log(e);
+    } finally {
+      setIstasksLoading(false);
+    }
+  };
+
+  return {
+    tasks,
+    istasksLoading,
+    refetch: makeRequest,
+  };
+};
