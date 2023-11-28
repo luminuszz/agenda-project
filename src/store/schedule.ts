@@ -7,6 +7,8 @@ import {
   format,
   setHours,
   setMinutes,
+  isSameHour,
+  isSameDay,
 } from "date-fns";
 
 import { ptBR } from "date-fns/locale";
@@ -52,8 +54,8 @@ export const hourLinesWithTasksAtom = atom((get) => {
   return get(hoursAtom).map((hoursData) => {
     const currentTasksInThisInterval = tasks.filter(
       (task) =>
-        task.timeRange.startDate.getHours() === hoursData.hour &&
-        task.date.getDay() === get(selectedDateAtom).getDay(),
+        isSameHour(task.timeRange.startDate, hoursData.date) &&
+        isSameDay(task.date, get(selectedDateAtom)),
     );
 
     return {
