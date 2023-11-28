@@ -2,7 +2,7 @@ import axios from "axios";
 import { z } from "zod";
 
 export const taskApi = axios.create({
-  baseURL: "http://localhost:3000",
+  baseURL: import.meta.env.API_URL,
 });
 
 const createTaskSchema = z.object({
