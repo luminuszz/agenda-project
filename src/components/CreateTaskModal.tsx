@@ -8,7 +8,7 @@ import {
 } from "@/components/ui/dialog.tsx";
 import { Button } from "@/components/ui/button.tsx";
 import { Textarea } from "@/components/ui/textarea.tsx";
-import { useAtom, useAtomValue } from "jotai";
+import { useAtomValue } from "jotai";
 import {
   Form,
   FormControl,
@@ -22,12 +22,14 @@ import { Input } from "@/components/ui/input.tsx";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { format, isAfter } from "date-fns";
-import { taskStore } from "@/store/task.ts";
 import { useRef } from "react";
 import { useToast } from "@/components/ui/use-toast.ts";
 import { Label } from "@/components/ui/label.tsx";
 import { transformHourStringToDate } from "@/lib/utils.ts";
 import { selectedDateAtom } from "@/store/schedule.ts";
+import { createTaskCall } from "@/lib/api.ts";
+import { useTasks } from "@/store/task.ts";
+import { ReloadIcon } from "@radix-ui/react-icons";
 
 const formSchema = z
   .object({
@@ -55,8 +57,8 @@ type FormValues = z.infer<typeof formSchema>;
 
 export const CreateTaskModal = () => {
   const { toast } = useToast();
+  const { refetch, istasksLoading } = useTasks();
 
-  const [, addTask] = useAtom(taskStore);
   const selectedDate = useAtomValue(selectedDateAtom);
 
   const closeButtonRef = useRef<HTMLButtonElement>(null);
@@ -71,23 +73,34 @@ export const CreateTaskModal = () => {
     },
   });
 
-  const handleCreateTask = (payload: typeof formSchema._output) => {
-    addTask({
-      date: payload.selectedDate,
-      description: payload.description,
-      timeRange: {
-        endDate: transformHourStringToDate(payload.endTimeRange),
-        startDate: transformHourStringToDate(payload.startTimeRange),
-      },
-      id: Date.now().toLocaleString(),
-    });
+  const handleCreateTask = async (payload: typeof formSchema._output) => {
+    try {
+      const data = {
+        date: payload.selectedDate,
+        description: payload.description,
+        timeRange: {
+          endDate: transformHourStringToDate(payload.endTimeRange),
+          startDate: transformHourStringToDate(payload.startTimeRange),
+        },
+        id: Date.now().toLocaleString(),
+      };
 
-    closeButtonRef.current?.click();
+      await createTaskCall(data);
 
-    toast({
-      description: "Tarefa adicionada !",
-      variant: "success",
-    });
+      await refetch();
+
+      closeButtonRef.current?.click();
+
+      toast({
+        description: "Tarefa adicionada !",
+        variant: "success",
+      });
+    } catch (e) {
+      toast({
+        variant: "destructive",
+        description: "Houve um erro ao criar a Task",
+      });
+    }
   };
 
   return (
@@ -165,7 +178,14 @@ export const CreateTaskModal = () => {
           </div>
 
           <DialogFooter>
-            <Button type="submit">Criar</Button>
+            {istasksLoading ? (
+              <Button disabled>
+                <ReloadIcon className="mr-2 h-4 w-4 animate-spin" />
+              </Button>
+            ) : (
+              <Button type="submit">Criar</Button>
+            )}
+
             <DialogClose ref={closeButtonRef}></DialogClose>
           </DialogFooter>
         </form>

@@ -10,9 +10,14 @@ import { useAtom, useAtomValue } from "jotai";
 import { currentWeekAtom, selectedDateAtom } from "@/store/schedule.ts";
 import { Dialog, DialogTrigger } from "@/components/ui/dialog.tsx";
 import { CreateTaskModal } from "@/components/CreateTaskModal.tsx";
+import { useEffect } from "react";
+import { useTasks } from "@/store/task.ts";
 
 export default function CalendarPage() {
   const [selectedDate, setSelectedDate] = useAtom(selectedDateAtom);
+
+  const { refetch } = useTasks();
+
   const weekList = useAtomValue(currentWeekAtom);
 
   const lastDateFromWeek = weekList?.[weekList.length - 1];
@@ -21,6 +26,10 @@ export default function CalendarPage() {
   const mount = format(firstDateFromWeek?.date, "MMMM", {
     locale: ptBR,
   });
+
+  useEffect(() => {
+    refetch();
+  }, []);
 
   return (
     <Dialog>
