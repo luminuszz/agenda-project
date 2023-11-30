@@ -82,12 +82,12 @@ export const CreateTaskModal = () => {
           endDate: transformHourStringToDate(payload.endTimeRange),
           startDate: transformHourStringToDate(payload.startTimeRange),
         },
-        id: Date.now().toLocaleString(),
       };
 
       await createTaskCall(data);
 
       await refetch();
+      form.reset();
 
       closeButtonRef.current?.click();
 

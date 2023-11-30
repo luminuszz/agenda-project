@@ -52,8 +52,6 @@ export const createTaskCall = async (payload: unknown) => {
 };
 
 export const getAllTasksCall = async (): Promise<TaskDto> => {
-  console.log(import.meta.env.VITE_API_URL);
-
   const { data } = await taskApi.get<TaskDto[]>("/task");
 
   return await taskSchema.parseAsync(data);

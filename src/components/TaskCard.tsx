@@ -23,14 +23,12 @@ export const TaskCard = ({ range, description }: Props) => {
     ((interval?.minutes || 0) * 100) / 60
   ).toFixed(0);
 
-  console.log(withByRangePorcent);
-
   return (
     <div
       style={{
         maxHeight: `${withByRangePorcent}%`,
       }}
-      className={`border-l-[7px] border-s-[#5272E9] p-3 h-full rounded-sm bg-[#E9EFFF] flex flex-col flex-1 justify-between  max-w-xl `}
+      className={`border-l-[7px] border-s-[#5272E9] p-3 h-full rounded-sm bg-[#E9EFFF] flex flex-col flex-1 justify-between  max-w-xl cursor-pointer`}
     >
       <p className="text-[#5272E9] text-xs ">{description}</p>
 
