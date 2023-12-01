@@ -10,20 +10,19 @@ import { useAtom, useAtomValue } from "jotai";
 import { currentWeekAtom, selectedDateAtom } from "@/store/schedule.ts";
 import { Dialog, DialogTrigger } from "@/components/ui/dialog.tsx";
 import { CreateTaskModal } from "@/components/CreateTaskModal.tsx";
-import { useEffect } from "react";
 import { useTasks } from "@/store/task.ts";
+import { useEffect } from "react";
 
 export default function CalendarPage() {
   const [selectedDate, setSelectedDate] = useAtom(selectedDateAtom);
+  const weekList = useAtomValue(currentWeekAtom);
 
   const { refetch } = useTasks();
-
-  const weekList = useAtomValue(currentWeekAtom);
 
   const lastDateFromWeek = weekList?.[weekList.length - 1];
   const firstDateFromWeek = weekList?.[0];
 
-  const mount = format(firstDateFromWeek?.date, "MMMM", {
+  const month = format(firstDateFromWeek?.date, "MMMM", {
     locale: ptBR,
   });
 
@@ -43,12 +42,12 @@ export default function CalendarPage() {
 
             <header className="flex  flex-1 justify-between">
               <h4 className="font-bold text-gray-900 text-xl leading-9 mt-10 capitalize">
-                {`${mount} , ${firstDateFromWeek?.day} - ${lastDateFromWeek?.day}`}
+                {`${month} , ${firstDateFromWeek?.day} - ${lastDateFromWeek?.day}`}
               </h4>
 
               <div className="flex gap-2 items-center justify-center">
                 <Button variant="outline" size="lg" className="capitalize">
-                  {mount}
+                  {month}
                 </Button>
 
                 <DialogTrigger asChild>
