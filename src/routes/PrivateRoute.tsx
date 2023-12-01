@@ -10,5 +10,5 @@ export const PrivateRoute: React.FC<PropsWithChildren> = ({ children }) => {
     return children ? children : <Outlet />;
   }
 
-  return <Navigate to="/login" />;
+  return <Navigate to="/login" replace />;
 };

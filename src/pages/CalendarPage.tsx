@@ -33,7 +33,7 @@ export default function CalendarPage() {
   return (
     <Dialog>
       <CreateTaskModal />
-      <main className="flex  w-screen h-screen justify-center items-center">
+      <main className="flex  w-screen h-screen justify-center items-center container-xl px-2">
         <div className="flex justify-center items-start flex-1">
           <div className="max-w-[1366px] w-full flex-1">
             <h3 className="font-bold text-gray-900 text-3xl leading-9">

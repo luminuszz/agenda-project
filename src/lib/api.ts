@@ -7,7 +7,8 @@ export const taskApi = axios.create({
 });
 
 taskApi.interceptors.request.use((request) => {
-  const token = JSON.parse(localStorage.getItem(authTokenKey) || "");
+  const storageToken = localStorage.getItem(authTokenKey) || "";
+  const token = storageToken ? JSON.parse(storageToken) : "";
   request.headers.Authorization = `Bearer ${token}`;
   return request;
 });
@@ -75,4 +76,18 @@ export const loginMutation = async (payload: unknown) => {
   );
 
   return data.token;
+};
+
+const userSchema = z.object({
+  email: z.string().email(),
+  name: z.string(),
+  id: z.string(),
+});
+
+export type GetCurrentUserResponse = z.infer<typeof userSchema>;
+
+export const getCurrentUserCall = async (): Promise<GetCurrentUserResponse> => {
+  const { data } = await taskApi.get<GetCurrentUserResponse>("user/me");
+
+  return data;
 };

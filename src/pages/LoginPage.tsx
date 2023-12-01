@@ -60,6 +60,7 @@ export const LoginPage = () => {
 
       navigate("/schedule");
     } catch (e) {
+      console.log(e);
       toast({
         description: "Houve um erro ao fazer o login",
         variant: "destructive",
