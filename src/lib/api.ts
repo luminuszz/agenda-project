@@ -1,8 +1,15 @@
 import axios from "axios";
 import { z } from "zod";
+import { authTokenKey } from "@/store/auth.ts";
 
 export const taskApi = axios.create({
   baseURL: import.meta.env.VITE_API_URL,
+});
+
+taskApi.interceptors.request.use((request) => {
+  const token = JSON.parse(localStorage.getItem(authTokenKey) || "");
+  request.headers.Authorization = `Bearer ${token}`;
+  return request;
 });
 
 const createTaskSchema = z.object({
@@ -55,4 +62,17 @@ export const getAllTasksCall = async (): Promise<TaskDto> => {
   const { data } = await taskApi.get<TaskDto[]>("/task");
 
   return await taskSchema.parseAsync(data);
+};
+
+export const createUserMutation = async (payload: unknown) => {
+  await taskApi.post("/user/create-user", payload);
+};
+
+export const loginMutation = async (payload: unknown) => {
+  const { data } = await taskApi.post<{ token: string }>(
+    "/auth/login",
+    payload,
+  );
+
+  return data.token;
 };

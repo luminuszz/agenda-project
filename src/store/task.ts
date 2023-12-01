@@ -43,5 +43,6 @@ export const useTasks = () => {
     tasks,
     istasksLoading,
     refetch: makeRequest,
+    setTasks,
   };
 };

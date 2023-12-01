@@ -19,7 +19,11 @@ import {
 import { Input } from "@/components/ui/input.tsx";
 import { Button } from "@/components/ui/button.tsx";
 import { z } from "zod";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { createUserMutation } from "@/lib/api.ts";
+import { useToast } from "@/components/ui/use-toast.ts";
+import { useState } from "react";
+import { ReloadIcon } from "@radix-ui/react-icons";
 
 const registerSchema = z
   .object({
@@ -41,6 +45,11 @@ const registerSchema = z
 type RegisterPayload = z.infer<typeof registerSchema>;
 
 export const RegisterPage = () => {
+  const [isLoading, setIsLoading] = useState(false);
+
+  const { toast } = useToast();
+  const navigate = useNavigate();
+
   const form = useForm<RegisterPayload>({
     resolver: zodResolver(registerSchema),
     values: {
@@ -51,7 +60,26 @@ export const RegisterPage = () => {
     },
   });
 
-  const handleRegister = (values: RegisterPayload) => console.log(values);
+  const handleRegister = async (values: RegisterPayload) => {
+    try {
+      setIsLoading(true);
+      await createUserMutation(values);
+
+      toast({
+        variant: "success",
+        description: "Usuário criado com sucesso, faça o login",
+      });
+
+      navigate("/login");
+    } catch (e) {
+      toast({
+        variant: "destructive",
+        description: "Houve um erro ao fazer o login",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
     <main className="flex flex-1 justify-center items-center w-screen h-screen bg-[#E9EFFF]">
@@ -63,7 +91,7 @@ export const RegisterPage = () => {
 
         <CardContent className="space-y-6">
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(handleRegister)}>
+            <form>
               <FormField
                 control={form.control}
                 render={({ field }) => (
@@ -124,9 +152,18 @@ export const RegisterPage = () => {
         </CardContent>
 
         <CardFooter className="flex justify-between">
-          <Button disabled={!form.formState.isValid} type="submit">
-            Cadastrar
-          </Button>
+          {isLoading ? (
+            <Button disabled>
+              <ReloadIcon className="mr-2 h-4 w-4 animate-spin" />
+            </Button>
+          ) : (
+            <Button
+              disabled={!form.formState.isValid || isLoading}
+              onClick={form.handleSubmit(handleRegister)}
+            >
+              Cadastrar
+            </Button>
+          )}
 
           <Button asChild variant="link" type="button">
             <Link to="/login">Fazer login</Link>
