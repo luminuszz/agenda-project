@@ -14,9 +14,7 @@ export const Router = createBrowserRouter([
   {
     path: "/schedule",
     element: (
-      <PrivateRoute>
         <CalendarPage />
-      </PrivateRoute>
     ),
   },
 
